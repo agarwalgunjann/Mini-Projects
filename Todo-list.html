@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo-List App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-image: url("wallpaper3.jpg");
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+    }
+
+    #todoApp {
+      background-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    #todoTitle {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #notesContainer {
+      max-height: 300px; 
+      overflow-y: auto;
+    }
+
+    .note {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      transition: transform 0.3s ease-in-out;
+      transform-origin: center left;
+      background-color: #fff;
+    }
+
+    .note.completed {
+      background-color: #dbf3f7;
+    }
+
+    .note input[type="checkbox"] {
+      margin-right: 15px;
+    }
+
+    .note span {
+      flex-grow: 1;
+      word-break: break-all;
+      font-size: 16px;
+    }
+
+    .note i {
+      cursor: pointer;
+      font-size: 20px;
+      color: #ff5252;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    @media screen and (min-width: 768px) {
+      #todoApp {
+        width: 70%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="todoApp">
+    <div id="todoTitle">Todo List</div>
+    <input type="text" id="noteInput" placeholder="Type your note and press Enter">
+    <div id="notesContainer"></div>
+  </div>
+
+  <script>
+    const notesContainer = document.getElementById('notesContainer');
+    const noteInput = document.getElementById('noteInput');
+
+    noteInput.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        const noteValue = noteInput.value.trim();
+        if (noteValue !== '') {
+          addNoteToContainer(noteValue, false);
+          storeNotesInLocalStorage();
+          noteInput.value = '';
+        }
+      }
+    });
+
+    function addNoteToContainer(note, completed) {
+      const noteDiv = document.createElement('div');
+      noteDiv.classList.add('note');
+      noteDiv.classList.toggle('completed', completed);
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = completed;
+      checkbox.addEventListener('change', function() {
+        noteDiv.classList.toggle('completed', checkbox.checked);
+        storeNotesInLocalStorage();
+      });
+
+      const textSpan = document.createElement('span');
+      textSpan.textContent = note;
+
+      const deleteIcon = document.createElement('i');
+      deleteIcon.classList.add('fas', 'fa-trash-alt');
+      deleteIcon.addEventListener('click', function() {
+        notesContainer.removeChild(noteDiv);
+        storeNotesInLocalStorage();
+      });
+
+      noteDiv.appendChild(checkbox);
+      noteDiv.appendChild(textSpan);
+      noteDiv.appendChild(deleteIcon);
+      notesContainer.appendChild(noteDiv);
+    }
+
+    function storeNotesInLocalStorage() {
+      if (typeof(Storage) !== 'undefined') {
+        const notes = [];
+        const noteElements = document.querySelectorAll('#notesContainer .note');
+        noteElements.forEach(function(noteElement) {
+          const note = {
+            text: noteElement.querySelector('span').textContent,
+            completed: noteElement.querySelector('input').checked
+          };
+          notes.push(note);
+        });
+        localStorage.setItem('notes', JSON.stringify(notes));
+      } else {
+        console.error('LocalStorage is not supported in this browser');
+      }
+    }
+
+    window.addEventListener('load', function() {
+      if (typeof(Storage) !== 'undefined') {
+        const storedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+        storedNotes.forEach(function(note) {
+          addNoteToContainer(note.text, note.completed);
+        });
+      } else {
+        console.error('LocalStorage is not supported in this browser');
+      }
+    });
+  </script>
+</body>
+</html>
