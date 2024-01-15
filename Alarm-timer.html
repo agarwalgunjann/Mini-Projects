@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #282c34;
+            color: #61dafb;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #container {
+            width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 2px solid #61dafb;
+            border-radius: 10px;
+        }
+
+        #tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            margin: 0;
+            border: none;
+            background-color: #61dafb;
+            color: #282c34;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab:hover, .active {
+            background-color: #282c34; 
+            color: #61dafb;
+        }
+
+        .tab-content {
+            display: none;
+            transition: opacity 0.5s;
+            background-color: #282c34; 
+            color: #61dafb; 
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .active {
+            display: block;
+            opacity: 1;
+        }
+
+        #clock, #timer {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #alarmInput, #timeInput {
+            font-size: 1.2em;
+            padding: 10px;
+            margin-bottom: 20px;
+            width: calc(100% - 20px);
+            box-sizing: border-box;
+        }
+
+        #setAlarmBtn, #clearAlarmBtn, #startTimerBtn {
+            font-size: 1em;
+            padding: 10px;
+            cursor: pointer;
+            background-color: #282c34;
+            color: #61dafb;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #setAlarmBtn:hover, #clearAlarmBtn:hover, #startTimerBtn:hover {
+            background-color: #282c34;
+        }
+
+        #timerDisplay {
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        @media only screen and (max-width: 600px) {
+            #container {
+                width: 100%;
+            }
+        }
+    </style>
+    <title>Alarm Clock and Timer</title>
+</head>
+<body>
+    <div id="container">
+        <div id="tabs">
+            <button class="tab" onclick="openTab('clockTab')">Clock</button>
+            <button class="tab" onclick="openTab('timerTab')">Timer</button>
+        </div>
+    
+        <div id="clockTab" class="tab-content active">
+            <p>Digital Alarm Clock</p>
+            <div>
+                <div id="clock">00:00:00</div>
+                <label for="alarmInput">Set Alarm:</label>
+                <input type="time" id="alarmInput">
+                <br>
+                <button id="setAlarmBtn" onclick="setAlarm()">Set Alarm</button>
+                <button id="clearAlarmBtn" onclick="clearAlarm()">Clear Alarm</button>
+            </div>
+        </div>
+    
+        <div id="timerTab" class="tab-content">
+            <p>Timer</p>
+            <div>
+                <label for="timeInput">Set Timer (seconds): </label>
+                <input type="number" id="timeInput" min="1" value="10"><br>
+                <button id="startTimerBtn" onclick="startTimer()">Start Timer</button>
+            </div>
+            <div id="timerDisplay">Time remaining: </div>
+        </div>
+    </div>
+    
+    <audio id="myAudio">
+      <source src="alarmsound.wav" type="audio/ogg">
+      <source src="alarmsound.wav" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+
+<script>
+    let alarmTime;
+    let alarmInterval;
+
+    function openTab(tabName) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.classList.remove('active'));
+
+        const selectedTab = document.getElementById(tabName);
+        selectedTab.classList.add('active');
+    }
+
+    function setAlarm() {
+        const alarmInput = document.getElementById("alarmInput").value;
+        if (alarmInput) {
+            alarmTime = alarmInput;
+            alarmInterval = setInterval(checkAlarm, 1000);
+            console.log("Alarm set: " + alarmTime);
+        } else {
+            alert("Please set a valid alarm time.");
+        }
+    }
+
+    function checkAlarm() {
+        const now = new Date();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+
+        const alarmHours = parseInt(alarmTime.split(':')[0], 10);
+        const alarmMinutes = parseInt(alarmTime.split(':')[1], 10);
+
+        if (currentHours === alarmHours && currentMinutes === alarmMinutes) {
+            clearInterval(alarmInterval);
+            x.play();
+            resetClock();
+        }
+    }
+
+    function getCurrentTime() {
+        const now = new Date();
+        const hours = padZero(now.getHours());
+        const minutes = padZero(now.getMinutes());
+        const seconds = padZero(now.getSeconds());
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function startClock() {
+        const clockElement = document.getElementById("clock");
+        clockElement.textContent = getCurrentTime();
+
+        setInterval(function() {
+            clockElement.textContent = getCurrentTime();
+        }, 1000);
+    }
+
+    function padZero(value) {
+        return value < 10 ? `0${value}` : value;
+    }
+
+    function resetClock() {
+        const clockElement = document.getElementById("clock");
+        clockElement.textContent = "00:00:00";
+    }
+
+    function clearAlarm() {
+        clearInterval(alarmInterval);
+        resetClock();
+        document.getElementById("alarmInput").value = "";
+    }
+
+    window.onload = startClock;
+
+    var x = document.getElementById("myAudio");
+    let timer;
+    let timeRemaining;
+
+    function startTimer() {
+        clearInterval(timer);
+        const inputElement = document.getElementById("timeInput");
+        timeRemaining = parseInt(inputElement.value);
+        updateTimerDisplay();
+
+        timer = setInterval(function() {
+            timeRemaining--;
+            updateTimerDisplay();
+            // Check if the timer has reached zero
+            if (timeRemaining <= 0) {
+                clearInterval(timer);
+                x.play();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const timerDisplayElement = document.getElementById("timerDisplay");
+        timerDisplayElement.textContent = "Time remaining: " + timeRemaining + " seconds";
+    }
+</script>
+</body>
+</html>
